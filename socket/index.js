@@ -5,6 +5,8 @@ const socketServer = (server) => {
     const io = socketio(server, {
         cors: {
             origin: '*',
+                methods: ["GET", "POST"],
+
         },
     });
 
