@@ -15,40 +15,41 @@ const socketServer = (server) => {
             socket.join(room);
             console.log('User joined room:', room);
         });
-       socket.on('joinRoom', ({ room, user }) => {
-    socket.join(room);
-    console.log(`${user} joined room: ${room}`);
-    io.to(room).emit('message', { user: 'admin', text: `${user} has joined!` });
-  });
+      // Example: handling the 'sendMessage' event
+socket.on('sendMessage', async ({ room, userId, text, fileUrl }) => {
+    try {
+        const message = new Message({ room, userId, text, fileUrl });
+        await message.save();
+        io.to(room).emit('message', message);
+    } catch (error) {
+        console.error('Error saving message:', error);
+    }
+});
 
-  socket.on('leaveRoom', ({ room, user }) => {
-    socket.leave(room);
-    console.log(`${user} left room: ${room}`);
-    io.to(room).emit('message', { user: 'admin', text: `${user} has left.` });
-  });
 
-  socket.on('videoOffer', ({ offer, room, caller }) => {
-    console.log('Video offer received:', offer);
-    socket.to(room).emit('videoOffer', { offer, caller });
-  });
+        socket.on('videoOffer', (data) => {
+            const { room, offer, caller } = data;
+            console.log('Received video offer from:', caller, 'in room:', room);
+            socket.to(room).emit('videoOffer', { offer, caller });
+        });
 
-  socket.on('videoAnswer', ({ answer, room }) => {
-    console.log('Video answer received:', answer);
-    socket.to(room).emit('videoAnswer', { answer });
-  });
+        socket.on('videoAnswer', (data) => {
+            const { room, answer } = data;
+            console.log('Received video answer in room:', room);
+            socket.to(room).emit('videoAnswer', { answer });
+        });
 
-  socket.on('iceCandidate', ({ candidate, room }) => {
-    console.log('ICE candidate received:', candidate);
-    socket.to(room).emit('iceCandidate', { candidate });
-  });
+        socket.on('iceCandidate', (data) => {
+            const { room, candidate } = data;
+            console.log('Received ICE candidate in room:', room);
+            socket.to(room).emit('iceCandidate', { candidate });
+        });
 
-  socket.on('message', ({ message, room }) => {
-    io.to(room).emit('message', message);
-  });
-
-  socket.on('file', ({ fileName, fileContent, room }) => {
-    io.to(room).emit('file', { fileName, fileContent });
-  });
+        socket.on('callRejected', (data) => {
+            const { room } = data;
+            console.log('Call rejected in room:', room);
+            socket.to(room).emit('callRejected');
+        });
 
         socket.on('callDisconnected', (data) => {
             const { room } = data;
