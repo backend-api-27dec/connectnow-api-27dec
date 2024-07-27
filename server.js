@@ -2,17 +2,29 @@
 
 const express = require('express');
 const dotenv = require('dotenv');
+const http = require('http'); 
+
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
-const socketServer = require('./socket');
+const socketHandler = require('./socket');
 const cors = require('cors');
-const { protect } = require('./middleware/authMiddleware');
+const socketIo = require('socket.io');
 
+const { protect } = require('./middleware/authMiddleware');
+const app = express();
+const server = http.createServer(app);
+
+
+const io = socketIo(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+});
 dotenv.config();
 connectDB();
 
-const app = express();
 app.use(express.json());
 app.use(cors());
 app.get('/protectedRoute', protect, (req, res) => {
@@ -22,6 +34,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+socketHandler(io);
 
-socketServer(server);
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
