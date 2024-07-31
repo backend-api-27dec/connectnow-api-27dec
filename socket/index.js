@@ -2,48 +2,51 @@ module.exports = (io) => {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('joinRoom', ({ room, name }) => {
-      console.log(`${name} joined room: ${room}`);
+    // Store user info
+    let currentRoom = null;
+    let currentUser = null;
+
+    socket.on('joinRoom', ({ room, user }) => {
+      console.log(`${user} joined room: ${room}`);
       socket.join(room);
+      currentRoom = room;
+      currentUser = user;
+      io.to(room).emit('joinRoomConfirmation', { user, room });
     });
 
-    socket.on('videoOffer', ({ offer, room, userToCall, caller }) => {
+    socket.on('videoOffer', ({ offer, userToCall, caller }) => {
       console.log('Video offer from:', caller, 'to:', userToCall);
-      io.to(room).emit('videoOffer', { offer, caller, userToCall });
+      io.to(currentRoom).emit('videoOffer', { offer, caller, userToCall });
     });
 
     socket.on('videoAnswer', ({ answer, caller }) => {
       console.log('Video answer from:', socket.id, 'to:', caller);
-      io.to(caller).emit('videoAnswer', { answer });
+      io.to(currentRoom).emit('videoAnswer', { answer, caller });
     });
 
-    socket.on('iceCandidate', ({ candidate, room }) => {
+    socket.on('newIceCandidate', ({ candidate }) => {
       console.log('ICE candidate from:', socket.id);
-      io.to(room).emit('iceCandidate', { candidate });
+      io.to(currentRoom).emit('newIceCandidate', { candidate });
     });
 
-    socket.on('callRejected', ({ caller }) => {
+    socket.on('rejectCall', ({ caller }) => {
       console.log('Call rejected by:', socket.id);
-      io.to(caller).emit('callRejected');
-    });
-
-    socket.on('callDisconnected', ({ room }) => {
-      console.log('Call disconnected by:', socket.id);
-      io.to(room).emit('callDisconnected');
-    });
-
-    socket.on('message', ({ message, room }) => {
-      console.log('Message from:', message.user, 'in room:', room, 'text:', message.text);
-      io.to(room).emit('message', message);
-    });
-
-    socket.on('file', ({ room, fileName, fileContent }) => {
-      console.log('File received:', fileName, 'in room:', room);
-      io.to(room).emit('file', { fileName, fileContent });
+      io.to(currentRoom).emit('callRejected', { caller });
     });
 
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
+      io.to(currentRoom).emit('user-disconnected');
+    });
+
+    socket.on('message', ({ message }) => {
+      console.log('Message from:', message.user, 'in room:', currentRoom, 'text:', message.text);
+      io.to(currentRoom).emit('message', message);
+    });
+
+    socket.on('file', ({ fileName, fileContent }) => {
+      console.log('File received:', fileName, 'in room:', currentRoom);
+      io.to(currentRoom).emit('file', { fileName, fileContent });
     });
   });
 };
