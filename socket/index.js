@@ -2,7 +2,6 @@ module.exports = (io) => {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    // Store user info
     let currentRoom = null;
     let currentUser = null;
 
