@@ -7,7 +7,7 @@ module.exports = (io) => {
     let currentUser = null;
 
     socket.on('joinRoom', ({ room, user }) => {
-      console.log(${user} joined room: ${room});
+      console.log(`${user} joined room: ${room}`);
       socket.join(room);
       currentRoom = room;
       currentUser = user;
@@ -36,19 +36,23 @@ module.exports = (io) => {
 
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
-      io.to(currentRoom).emit('user-disconnected');
+      if (currentRoom) {
+        io.to(currentRoom).emit('user-disconnected');
+      }
     });
 
     socket.on('message', ({ message }) => {
       console.log('Message from:', message.user, 'in room:', currentRoom, 'text:', message.text);
-      io.to(currentRoom).emit('message', message);
+      if (currentRoom) {
+        io.to(currentRoom).emit('message', message);
+      }
     });
 
     socket.on('file', ({ fileName, fileContent }) => {
       console.log('File received:', fileName, 'in room:', currentRoom);
-      io.to(currentRoom).emit('file', { fileName, fileContent });
+      if (currentRoom) {
+        io.to(currentRoom).emit('file', { fileName, fileContent });
+      }
     });
   });
 };
-
-
