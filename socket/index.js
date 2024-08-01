@@ -7,7 +7,7 @@ module.exports = (io) => {
     let currentUser = null;
 
     socket.on('joinRoom', ({ room, user }) => {
-      console.log(${user} joined room: ${room});
+      console.log(`${user} joined room: ${room}`);
       socket.join(room);
       currentRoom = room;
       currentUser = user;
