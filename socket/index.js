@@ -16,12 +16,14 @@ module.exports = (io) => {
 
     socket.on('videoOffer', ({ offer, userToCall, caller }) => {
       console.log('Video offer from:', caller, 'to:', userToCall);
-      io.to(currentRoom).emit('videoOffer', { offer, caller, userToCall });
+      // Emit the offer to the specific user
+      socket.to(userToCall).emit('videoOffer', { offer, caller, userToCall });
     });
 
     socket.on('videoAnswer', ({ answer, caller }) => {
       console.log('Video answer from:', socket.id, 'to:', caller);
-      io.to(currentRoom).emit('videoAnswer', { answer, caller });
+      // Emit the answer to the specific caller
+      socket.to(caller).emit('videoAnswer', { answer, caller });
     });
 
     socket.on('newIceCandidate', ({ candidate }) => {
@@ -31,7 +33,7 @@ module.exports = (io) => {
 
     socket.on('rejectCall', ({ caller }) => {
       console.log('Call rejected by:', socket.id);
-      io.to(currentRoom).emit('callRejected', { caller });
+      socket.to(caller).emit('callRejected', { caller });
     });
 
     socket.on('disconnect', () => {
