@@ -15,7 +15,7 @@ module.exports = (io) => {
 
     socket.on('videoOffer', ({ offer, userToCall, caller }) => {
       console.log('Video offer from:', caller, 'to:', userToCall);
-      io.to(userToCall).emit('videoOffer', { offer, caller, userToCall });
+      io.to(currentRoom).emit('videoOffer', { offer, caller, userToCall });
     });
 
     socket.on('videoAnswer', ({ answer, caller }) => {
@@ -23,11 +23,12 @@ module.exports = (io) => {
       io.to(currentRoom).emit('videoAnswer', { answer, caller });
     });
 
- socket.on('newIceCandidate', ({ candidate, caller }) => {
-      console.log('ICE candidate from:', socket.id);
-      io.to(caller).emit('newIceCandidate', { candidate });
-    });
-
+   socket.on('newIceCandidate', ({ candidate }) => {
+    console.log('ICE candidate from:', socket.id);
+    if (currentRoom) {
+        io.to(currentRoom).emit('newIceCandidate', { candidate });
+    }
+});
 
 
     socket.on('rejectCall', ({ caller }) => {
