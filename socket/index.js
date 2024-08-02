@@ -15,28 +15,28 @@ module.exports = (io) => {
 
     socket.on('videoOffer', ({ offer, userToCall, caller }) => {
       console.log('Video offer from:', caller, 'to:', userToCall);
-      io.to(currentRoom).emit('videoOffer', { offer, caller, userToCall });
+      io.to(userToCall).emit('videoOffer', { offer, caller, userToCall });
     });
 
     socket.on('videoAnswer', ({ answer, caller }) => {
       console.log('Video answer from:', socket.id, 'to:', caller);
-      io.to(currentRoom).emit('videoAnswer', { answer, caller });
+      io.to(caller).emit('videoAnswer', { answer, caller });
     });
 
-    socket.on('newIceCandidate', ({ candidate }) => {
+    socket.on('newIceCandidate', ({ candidate, to }) => {
       console.log('ICE candidate from:', socket.id);
-      io.to(currentRoom).emit('newIceCandidate', { candidate });
+      io.to(to).emit('newIceCandidate', { candidate });
     });
 
     socket.on('rejectCall', ({ caller }) => {
       console.log('Call rejected by:', socket.id);
-      io.to(currentRoom).emit('callRejected', { caller });
+      io.to(caller).emit('callRejected');
     });
 
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
       if (currentRoom) {
-        io.to(currentRoom).emit('user-disconnected');
+        io.to(currentRoom).emit('user-disconnected', { userId: socket.id });
       }
     });
 
