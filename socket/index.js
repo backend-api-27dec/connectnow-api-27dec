@@ -3,11 +3,13 @@ module.exports = (io) => {
     console.log('User connected:', socket.id);
 
     let currentRoom = null;
+    let currentUser = null;
 
     socket.on('joinRoom', ({ room, user }) => {
       console.log(`${user} joined room: ${room}`);
       socket.join(room);
       currentRoom = room;
+      currentUser = user;
       io.to(room).emit('joinRoomConfirmation', { user, room });
     });
 
@@ -21,9 +23,17 @@ module.exports = (io) => {
       io.to(currentRoom).emit('videoAnswer', { answer, caller });
     });
 
-    socket.on('newIceCandidate', ({ candidate }) => {
-      console.log('ICE candidate from:', socket.id);
-      io.to(currentRoom).emit('newIceCandidate', { candidate });
+   socket.on('newIceCandidate', ({ candidate }) => {
+    console.log('ICE candidate from:', socket.id);
+    if (currentRoom) {
+        io.to(currentRoom).emit('newIceCandidate', { candidate });
+    }
+});
+
+
+    socket.on('rejectCall', ({ caller }) => {
+      console.log('Call rejected by:', socket.id);
+      io.to(currentRoom).emit('callRejected', { caller });
     });
 
     socket.on('disconnect', () => {
