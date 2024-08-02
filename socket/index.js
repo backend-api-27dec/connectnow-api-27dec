@@ -12,7 +12,6 @@ module.exports = (io) => {
       currentUser = user;
       io.to(room).emit('joinRoomConfirmation', { user, room });
     });
-
     socket.on('videoOffer', ({ offer, userToCall, caller }) => {
       console.log('Video offer from:', caller, 'to:', userToCall);
       io.to(currentRoom).emit('videoOffer', { offer, caller, userToCall });
