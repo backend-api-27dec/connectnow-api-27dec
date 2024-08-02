@@ -15,7 +15,7 @@ module.exports = (io) => {
 
     socket.on('videoOffer', ({ offer, userToCall, caller }) => {
       console.log('Video offer from:', caller, 'to:', userToCall);
-      io.to(currentRoom).emit('videoOffer', { offer, caller, userToCall });
+      io.to(userToCall).emit('videoOffer', { offer, caller, userToCall });
     });
 
     socket.on('videoAnswer', ({ answer, caller }) => {
