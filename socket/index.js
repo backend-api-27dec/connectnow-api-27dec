@@ -1,7 +1,6 @@
 module.exports = (io) => {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
-
     let currentRoom = null;
     let currentUser = null;
 
@@ -12,6 +11,7 @@ module.exports = (io) => {
       currentUser = user;
       io.to(room).emit('joinRoomConfirmation', { user, room });
     });
+
     socket.on('videoOffer', ({ offer, userToCall, caller }) => {
       console.log('Video offer from:', caller, 'to:', userToCall);
       io.to(currentRoom).emit('videoOffer', { offer, caller, userToCall });
@@ -22,13 +22,13 @@ module.exports = (io) => {
       io.to(currentRoom).emit('videoAnswer', { answer, caller });
     });
 
-   socket.on('newIceCandidate', ({ candidate }) => {
-    console.log('ICE candidate from:', socket.id);
-    if (currentRoom) {
-        io.to(currentRoom).emit('newIceCandidate', { candidate });
-    }
-});
-
+    socket.on('newIceCandidate', ({ candidate, userToSendTo }) => {
+      console.log('ICE candidate from:', socket.id);
+      if (currentRoom) {
+        // Send ICE candidate only to the intended user
+        io.to(currentRoom).emit('newIceCandidate', { candidate, userToSendTo });
+      }
+    });
 
     socket.on('rejectCall', ({ caller }) => {
       console.log('Call rejected by:', socket.id);
