@@ -23,10 +23,17 @@ module.exports = (io) => {
       io.to(currentRoom).emit('videoAnswer', { answer, caller });
     });
 
-    socket.on('newIceCandidate', ({ candidate }) => {
-      console.log('ICE candidate from:', socket.id);
+    socket.on('newIceCandidate', ({ candidate, to }) => {
+      console.log('ICE candidate from:', socket.id, 'to:', to);
       if (currentRoom) {
-        io.to(currentRoom).emit('newIceCandidate', { candidate });
+        io.to(currentRoom).emit('newIceCandidate', { candidate, from: socket.id });
+      }
+    });
+
+    socket.on('endCall', ({ to }) => {
+      console.log('End call request from:', socket.id);
+      if (currentRoom) {
+        io.to(currentRoom).emit('callEnded', { from: socket.id });
       }
     });
 
