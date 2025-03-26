@@ -26,14 +26,14 @@ module.exports = (io) => {
     socket.on('newIceCandidate', ({ candidate, to }) => {
       console.log('ICE candidate from:', socket.id, 'to:', to);
       if (currentRoom) {
-        io.to(currentRoom).emit('newIceCandidate', { candidate, from: socket.id });
+        io.to(currentRoom).emit('newIceCandidate', { candidate, from: socket.id, to });
       }
     });
 
     socket.on('endCall', ({ to }) => {
-      console.log('End call request from:', socket.id);
+      console.log('End call request from:', socket.id, 'to:', to);
       if (currentRoom) {
-        io.to(currentRoom).emit('callEnded', { from: socket.id });
+        io.to(currentRoom).emit('callEnded', { from: socket.id, to });
       }
     });
 
